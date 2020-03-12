@@ -2,6 +2,7 @@
 #include <fstream>
 #include <wrl.h>
 #include <vector>
+#include <cmath>
 using namespace std;
 enum commands{
     InversColor = '0',
@@ -48,8 +49,8 @@ public:
 
         }
 
-        fscanf(inpImage, "%s\n%d %d\n%d\n", &h.type, &h.x, &h.y, &h.a);
-
+        fscanf(inpImage, "%s\n%d %d\n%u\n", &h.type, &h.x, &h.y, &h.a);
+       // cout << h.a;
         if(!strcmp(h.type, "P5")) {
             char *P5 = new char[h.x * h.y];
             int t = fread(P5, sizeof(char), h.x * h.y, inpImage);
@@ -259,7 +260,7 @@ public:
         return 1;
 
     }
-    int writeLine(float x0, float y0, float x1, float y1, float gamma = 1, size_t brightness = 1, float thickness = 1){
+    int writeLine(float x0, float y0, float x1, float y1, float gamma = 2, size_t brightness = 255, float thickness = 1){
         x1 = x1 > h.x ? h.x : x1;
         x0 = x0 > h.x ? h.x : x0;
         y0 = y0 > h.y ? h.y : y0;
@@ -275,18 +276,20 @@ public:
         size_t ystart = (size_t)(y0 + gradient * (xstart - x0));
         size_t xend = (size_t)(x1 + 0.5);
         size_t yend = (size_t)(y1 + gradient * (xend - x1));
-        float y = ystart + gradient;
-        cout << h.a;
+        float y = ystart - y0 + gradient;
         for(size_t x = xstart; x <= xend; x++){
-
-            P5[(size_t)y * h.x + x] = (char)((int)(255 * (1 - y + (size_t)y)));
-            cout << (int)(h.a * (1 - y + (size_t)y)) << "\n";
-            P5[((size_t)y + 1) * h.x + x] = (char)((int)(255 * (y - (size_t)y)));
-            cout << (int)(h.a * (y - (size_t)y)) << "\n";
+            /*
+            int pixc1 = (int)(brightness * (1 - y + (size_t)y));
+            int pixc2 = (int)(brightness * (y - (size_t)y));
+             */
+            int pixc1 = (int)(brightness);
+            int pixc2 = (int)(brightness);
+            int p1gc = pow(pow((int)(pixc1 / 255), 0.5), gamma) * 255;
+            int p2gc = pow(pow((int)(pixc2 / 255), 0.5), gamma) * 255;
+            P5[(size_t)y * h.x + x] = (char)(pixc1);
+            P5[((size_t)y + 1) * h.x + x] = (char)(pixc2);
              y += gradient;
-            //cout << "yes";
         }
-
     }
 };
 
@@ -314,8 +317,8 @@ int main(int argc, char *argv[]) {
             break;
         }
         case WriteLine:{
-            img.writeLine(atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]));
-            cout << "Under save";
+            img.writeLine(atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), atoi(argv[7]), atoi(argv[8]),
+                    atoi(argv[9]), atoi(argv[10]));
             img.saveImage(argv[3]);
             break;
         }
