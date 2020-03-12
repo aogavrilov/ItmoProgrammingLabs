@@ -1,1 +1,1 @@
-Open pdf file to read case.
+Open pdf file to read question.
